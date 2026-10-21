@@ -13,8 +13,16 @@ graph_card = {
     "страница": 6,
 }
 
+diagnosis_card = {
+    "название": "DIAGNOSIS",
+    "ответ": "отображение аварийных сообщений",
+    "документ": "Prilizhenie po KEDM.pdf",
+    "страница": 6,
+}
+
+
 # Список всех доступных карточек
-cards = [file_card, graph_card]
+cards = [file_card, graph_card, diagnosis_card]
 
 
 def find_card(title, cards_list):
