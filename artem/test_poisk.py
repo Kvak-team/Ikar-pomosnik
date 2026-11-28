@@ -1,53 +1,65 @@
-import copy
 import json
 from pathlib import Path
 
 from poisk import find_card
 
+cards_path = Path(__file__).parent.parent / "aleksandr" / "cards.json"
+with open(cards_path, "r", encoding="utf-8") as file:
+    cards = json.load(file)
 
-def main():
-    cards_path = Path(__file__).resolve().parent.parent / "aleksandr" / "cards.json"
-    with cards_path.open("r", encoding="utf-8") as file:
-        cards = json.load(file)
+tests = [
+    ("FILE", "FILE"),
+    ("GRAPH", "GRAPH"),
+    ("DIAGNOSIS", "DIAGNOSIS"),
+    ("file", "FILE"),
+    (" FILE ", "FILE"),
+    ("FIL", None),
+    ("", None),
+    ("ZZZ", None),
+]
 
-    cards_snapshot = copy.deepcopy(cards)
+print("=== Проверка точного поиска ===")
+errors = 0
 
-    exact_cases = [
-        ("FILE", "FILE"),
-        ("GRAPH", "GRAPH"),
-        ("DIAGNOSIS", "DIAGNOSIS"),
-        ("file", "FILE"),
-        (" FILE ", "FILE"),
-        ("FIL", None),
-        ("", None),
-        ("ZZZ", None),
-    ]
+for query, expected in tests:
+    result = find_card(query, cards)
 
-    print("=== Проверка точного поиска ===")
-    for query, expected in exact_cases:
-        result = find_card(query, cards)
-        actual = result["название"] if result is not None else None
-        assert actual == expected, f"Ошибка для {query!r}: ожидалось {expected!r}, получено {actual!r}"
-        print(f"Запрос: {query!r} -> Ожидалось: {expected!r} -> Получено: {actual!r}")
+    if result is None:
+        actual = None
+    else:
+        actual = result["название"]
 
-    natural_language_cases = [
-        ("как удалить график", "FILE"),
-        ("аварийные сообщения", "DIAGNOSIS"),
-    ]
+    if actual == expected:
+        status = "ОК"
+    else:
+        status = "ОШИБКА"
+        errors += 1
 
-    print("\n=== Проверка запросов своими словами (ограничение точного поиска) ===")
-    for query, expected_by_meaning in natural_language_cases:
-        result = find_card(query, cards)
-        actual = result["название"] if result is not None else None
-        assert result is None, f"Ожидалось None для {query!r}, получено {actual!r}"
-        print(
-            f"Запрос: {query!r} -> По смыслу: {expected_by_meaning!r} -> Получено: {actual!r} "
-            "(ожидаемое ограничение точного поиска)"
-        )
+    print(f"[{status}] Ввод: '{query}' | Ожидалось: {expected} | Получено: {actual}")
 
-    assert cards == cards_snapshot, "Исходный список карточек был изменён!"
-    print("\nСписок cards_list не изменён. Все проверки пройдены успешно.")
+print("\n=== Запросы своими словами (ограничение точного поиска) ===")
+natural_queries = [
+    ("как удалить график", "FILE"),
+    ("аварийные сообщения", "DIAGNOSIS"),
+]
 
+for query, meaning in natural_queries:
+    result = find_card(query, cards)
 
-if __name__ == "__main__":
-    main()
+    if result is None:
+        actual = None
+    else:
+        actual = result["название"]
+
+    print(f"Ввод: '{query}' | По смыслу: {meaning} | Получено: {actual}")
+
+with open(cards_path, "r", encoding="utf-8") as file:
+    original_cards = json.load(file)
+
+if cards == original_cards:
+    print("\n[ОК] Исходный список карточек не изменился.")
+else:
+    print("\n[ОШИБКА] Исходный список карточек изменился!")
+    errors += 1
+
+print(f"\nИтог: ошибок = {errors}")

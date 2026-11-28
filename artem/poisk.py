@@ -4,29 +4,22 @@ from pathlib import Path
 
 def find_card(title, cards_list):
     """
-    Ищет карточку по точному совпадению поля 'название' после нормализации
-    (удаление пробелов по краям и приведение регистра).
-
-    Получает:
-        title (str): искомое название карточки.
-        cards_list (list): список словарей карточек.
-
-    Возвращает:
-        dict | None: найденный словарь карточки или None, если совпадений нет.
+    Ищет карточку по точному названию без учёта регистра и пробелов по краям.
+    Получает строку title и список карточек cards_list, возвращает словарь или None.
     """
-    normalized_title = title.strip().casefold()
-    if normalized_title == "":
+    query = title.strip().casefold()
+    if query == "":
         return None
 
     for card in cards_list:
-        if card["название"].strip().casefold() == normalized_title:
+        if card["название"].strip().casefold() == query:
             return card
     return None
 
 
 if __name__ == "__main__":
-    cards_path = Path(__file__).resolve().parent.parent / "aleksandr" / "cards.json"
-    with cards_path.open("r", encoding="utf-8") as file:
+    cards_path = Path(__file__).parent.parent / "aleksandr" / "cards.json"
+    with open(cards_path, "r", encoding="utf-8") as file:
         cards = json.load(file)
 
     query = input("Введите название: ")
